@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Gender {
+  M
+  F
+}
+
+enum UserType {
+  COACH
+  PROFESSOR
+  PLAYER
+  VIEWER
+  CHAIR_UMPIRE
+  LINE_UMPIRE
+}
+
+enum Modality {
+  SINGLES
+  DOUGLES
+}
+
+enum Status {
+  DRAFT
+  REQUEST
+  ACTIVE
+  CANCELED
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  userTypeId  UserType
+  email       String        @unique
+  password    String
+  firstName   String
+  lastName    String
+  gender      Gender
+  zipcode     String
+  ntrp        Float?
+  SessionUser SessionUser[]
+}
+
+model Sessions {
+  id            Int            @id @default(autoincrement())
+  sessionTypeId Int
+  sessionType   SessionType    @relation(fields: [sessionTypeId], references: [id])
+  modality      Modality
+  status        Status
+  start         DateTime
+  end           DateTime
+  SessionUser   SessionUser[]
+  SessionScore  SessionScore[]
+}
+
+model SessionType {
+  id       Int        @id @default(autoincrement())
+  name     String
+  Sessions Sessions[]
+}
+
+model SessionUser {
+  id         Int      @id @default(autoincrement())
+  session_id Sessions @relation(fields: [sessionsId], references: [id])
+  sessionsId Int
+  user_id    User     @relation(fields: [userId], references: [id])
+  userId     Int
+  userTypeId UserType
+  isWinner   Boolean
+}
+
+model SessionScore {
+  id          Int      @id @default(autoincrement())
+  session     Sessions @relation(fields: [sessionsId], references: [id])
+  sessionsId  Int
+  nSets       Int
+  nGames      Int
+  winnerScore Int
+  loserScore  Int
+}
