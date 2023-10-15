@@ -45,6 +45,7 @@ model User {
   firstName   String
   lastName    String
   gender      Gender
+  avatar      String?
   zipcode     String
   ntrp        Float?
   SessionUser SessionUser[]
