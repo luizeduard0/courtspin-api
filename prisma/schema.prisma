@@ -44,9 +44,10 @@ model User {
   password    String
   firstName   String
   lastName    String
+  phoneNumber String
   gender      Gender
   avatar      String?
-  zipcode     String
+  location    String
   ntrp        Float?
   SessionUser SessionUser[]
 }
