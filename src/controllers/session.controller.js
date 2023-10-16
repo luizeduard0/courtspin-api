@@ -65,7 +65,7 @@ const addSession = asyncHandler(async (req, res) => {
     }
   })
 
-  const sessionUser = await prisma.sessionUser.create({
+  await prisma.sessionUser.create({
     data: {
       userId: req.user.id,
       sessionId: session.id,
@@ -77,7 +77,60 @@ const addSession = asyncHandler(async (req, res) => {
   res.status(200).json(session)
 })
 
+const joinSession = asyncHandler(async(req, res) => {
+  const payload = req.params
+
+  try {
+    z.object({
+      id: z.string(),
+    })
+  } catch (e) {
+    res.status(422).json({
+      code: e.code,
+      error: e.message
+    })
+    return
+  }
+
+  const existingSessionUsers = await prisma.sessionUser.findMany({
+    where: {
+      sessionId: parseInt(payload.id)
+    }
+  })
+
+  const hasJoined = existingSessionUsers.find(u => u.id === req.user.id)
+
+  if(hasJoined) {
+    res.status(422).json({
+      code: 422,
+      error: "You're already part of this session"
+    })
+    return
+  }
+
+  const sessionUser = await prisma.sessionUser.create({
+    data: {
+      sessionId: parseInt(payload.id),
+      userId: req.user.id,
+      isWinner: false,
+      userType: 'PLAYER'
+    }
+  })
+
+  if(sessionUser) {
+    res.json({
+      id: sessionUser.id
+    })
+  } else {
+    res.status(422).json({
+      code: 422,
+      error: 'Something went wrong, please try again.'
+    })
+  }
+})
+
 export default {
   loadSession,
-  addSession
+  addSession,
+  joinSession
 }

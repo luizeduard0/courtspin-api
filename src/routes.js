@@ -16,6 +16,7 @@ routes.post('/auth/login', authController.login)
 routes.post('/auth/signup', authController.signup)
 
 routes.get('/sessions/:id', jwtMiddleware, sessionController.loadSession)
+routes.post('/sessions/:id/join', jwtMiddleware, sessionController.joinSession)
 routes.post('/sessions', jwtMiddleware, sessionController.addSession)
 
 export default routes
