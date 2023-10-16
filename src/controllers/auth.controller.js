@@ -1,13 +1,14 @@
-const asyncHandler = require("express-async-handler");
-const { PrismaClient } = require('@prisma/client')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('./../constants')
-const { z } = require('zod')
+import asyncHandler from "express-async-handler"
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import { z } from 'zod'
+import dotenv from "dotenv";
+dotenv.config()
 
 const prisma = new PrismaClient()
 
-exports.login = asyncHandler(async (req, res) => {
+const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body
 
   const user = await prisma.user.findUnique({
@@ -16,13 +17,21 @@ exports.login = asyncHandler(async (req, res) => {
     }
   })
 
+  if(!user) {
+    res.status(404).json({
+      code: 404,
+      msg: 'Invalid email or password'
+    })
+    return
+  }
+
   if (bcrypt.compare(password, user.password)) {
     const { password, ...usr } = user
 
-    const token = jwt.sign({
+    const token = await jwt.sign({
       id: usr.id,
       email: usr.email
-    }, JWT_SECRET)
+    }, process.env.JWT_SECRET)
 
     res.json({
       token,
@@ -31,11 +40,11 @@ exports.login = asyncHandler(async (req, res) => {
     return
   }
   res.status(401).json({
-    error: 'Invalid username or password'
+    error: 'Invalid email or password'
   })
 })
 
-exports.signup = asyncHandler(async (req, res) => {
+const signup = asyncHandler(async (req, res) => {
   const payload = req.body
 
   try {
@@ -46,6 +55,7 @@ exports.signup = asyncHandler(async (req, res) => {
       phoneNumber: z.string(),
       password: z.string(),
       password_confirmation: z.string(),
+      ntrp: z.string()
     })
   } catch (e) {
     res.status(422).json({
@@ -63,7 +73,7 @@ exports.signup = asyncHandler(async (req, res) => {
     return
   }
 
-  const {password_confirmation, ...data} = payload
+  const {password_confirmation, ntrp, ...data} = payload
 
   const hashedPassword = await bcrypt.hash(data.password, 10)
 
@@ -71,7 +81,8 @@ exports.signup = asyncHandler(async (req, res) => {
     data: {
       ...data,
       userTypeId: 'PLAYER',
-      password: hashedPassword
+      password: hashedPassword,
+      ntrp: parseFloat(ntrp)
     }
   })
 
@@ -79,3 +90,8 @@ exports.signup = asyncHandler(async (req, res) => {
     id: user.id
   })
 })
+
+export default {
+  login,
+  signup
+}

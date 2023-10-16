@@ -27,7 +27,7 @@ enum UserType {
 
 enum Modality {
   SINGLES
-  DOUGLES
+  DOUBLES
 }
 
 enum Status {
@@ -35,6 +35,12 @@ enum Status {
   REQUEST
   ACTIVE
   CANCELED
+}
+
+enum SessionType {
+  MATCH
+  PRACTICE
+  LESSON
 }
 
 model User {
@@ -49,35 +55,29 @@ model User {
   avatar      String?
   location    String
   ntrp        Float?
-  SessionUser SessionUser[]
+  sessionUser SessionUser[]
 }
 
 model Sessions {
-  id            Int            @id @default(autoincrement())
-  sessionTypeId Int
-  sessionType   SessionType    @relation(fields: [sessionTypeId], references: [id])
-  modality      Modality
-  status        Status
-  start         DateTime
-  end           DateTime
-  SessionUser   SessionUser[]
-  SessionScore  SessionScore[]
-}
-
-model SessionType {
-  id       Int        @id @default(autoincrement())
-  name     String
-  Sessions Sessions[]
+  id           Int            @id @default(autoincrement())
+  sessionType  SessionType
+  modality     Modality
+  location     String
+  status       Status
+  start        DateTime
+  end          DateTime
+  sessionUser  SessionUser[]
+  sessionScore SessionScore[]
 }
 
 model SessionUser {
-  id         Int      @id @default(autoincrement())
-  session_id Sessions @relation(fields: [sessionsId], references: [id])
-  sessionsId Int
-  user_id    User     @relation(fields: [userId], references: [id])
-  userId     Int
-  userTypeId UserType
-  isWinner   Boolean
+  id        Int      @id @default(autoincrement())
+  sessions  Sessions @relation(fields: [sessionId], references: [id])
+  sessionId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  userType  UserType
+  isWinner  Boolean
 }
 
 model SessionScore {
