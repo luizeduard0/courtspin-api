@@ -15,6 +15,7 @@ routes.get('/', (req, res) => {
 routes.post('/auth/login', authController.login)
 routes.post('/auth/signup', authController.signup)
 
+routes.get('/inbox', sessionController.inbox)
 routes.get('/sessions/:id', jwtMiddleware, sessionController.loadSession)
 routes.post('/sessions/:id/join', jwtMiddleware, sessionController.joinSession)
 routes.post('/sessions', jwtMiddleware, sessionController.addSession)

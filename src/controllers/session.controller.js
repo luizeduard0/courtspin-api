@@ -129,8 +129,41 @@ const joinSession = asyncHandler(async(req, res) => {
   }
 })
 
+export const inbox = asyncHandler(async(req, res) => {
+  const itemsPerPage = 15
+  const page = req.params?.p || 0
+
+  const sessions = await prisma.sessions.findMany({
+    include: {
+      sessionUser: {
+        select: {
+          isWinner: true,
+          userType: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              ntrp: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      id: 'desc'
+    },
+    skip: page,
+    take: 15
+  })
+
+  res.json(sessions)
+})
+
 export default {
   loadSession,
   addSession,
-  joinSession
+  joinSession,
+  inbox
 }
